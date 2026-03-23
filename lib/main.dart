@@ -76,7 +76,7 @@ class PomodoroTimerState extends State<PomodoroTimer> {
   final breakDuration = Duration(minutes: 5);
 
   PomodoroState state = PomodoroState.focusPeriod;
-  bool isRunning = false;
+  bool isTimerActive = false;
   Timer? _timerHandle;
   AudioPlayer? _audioPlayer;
   bool _isTransitioningState = false;
@@ -84,10 +84,10 @@ class PomodoroTimerState extends State<PomodoroTimer> {
   int timeRemaining = 0;
 
   void start() {
-    if (isRunning) return;
+    if (isTimerActive) return;
 
     setState(() {
-      isRunning = true;
+      isTimerActive = true;
     });
 
     _timerHandle = Timer.periodic(Duration(seconds: 1), (Timer _) async {
@@ -116,7 +116,7 @@ class PomodoroTimerState extends State<PomodoroTimer> {
     setState(() {
       _timerHandle?.cancel();
       _timerHandle = null;
-      isRunning = false;
+      isTimerActive = false;
     });
   }
 
@@ -135,10 +135,10 @@ class PomodoroTimerState extends State<PomodoroTimer> {
 
   Future<void> stopAlarmAndContinue() async {
     await _audioPlayer?.dispose();
+
     setState(() {
       _audioPlayer = null;
     });
-
     start();
   }
 
@@ -166,7 +166,7 @@ class PomodoroTimerState extends State<PomodoroTimer> {
   }
 
   void toggleTimer() {
-    if (isRunning) {
+    if (isTimerActive) {
       pause();
     } else {
       start();
@@ -247,10 +247,10 @@ class PomodoroTimerState extends State<PomodoroTimer> {
       children: [
         IconButton(
           style: IconButton.styleFrom(
-            backgroundColor: isRunning
+            backgroundColor: isTimerActive
                 ? base.colorScheme.primary
                 : base.colorScheme.primaryContainer,
-            foregroundColor: isRunning
+            foregroundColor: isTimerActive
                 ? base.colorScheme.onPrimary
                 : base.colorScheme.onPrimaryContainer,
             padding: EdgeInsetsGeometry.symmetric(
@@ -259,9 +259,11 @@ class PomodoroTimerState extends State<PomodoroTimer> {
             ),
           ),
           icon: Transform.translate(
-            offset: Offset(isRunning ? 0 : btnIconSize / 12, 0),
+            offset: Offset(isTimerActive ? 0 : btnIconSize / 12, 0),
             child: Icon(
-              isRunning ? CupertinoIcons.pause_fill : CupertinoIcons.play_fill,
+              isTimerActive
+                  ? CupertinoIcons.pause_fill
+                  : CupertinoIcons.play_fill,
               size: btnIconSize,
             ),
           ),
