@@ -16,7 +16,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: AppRoot(),
+      home: const AppRoot(),
       theme: lightTheme,
       darkTheme: darkTheme,
     );
@@ -68,6 +68,7 @@ class PomodoroTimerState extends State<PomodoroTimer> {
   PomodoroTimerState() {
     timeRemaining = getStateDuration(state);
   }
+
   final btnIconSize = 24.0;
   final btnPadding = 28.0;
 
@@ -78,11 +79,13 @@ class PomodoroTimerState extends State<PomodoroTimer> {
   bool isRunning = false;
   Timer? _timerHandle;
   AudioPlayer? _audioPlayer;
+  bool _isTransitioningState = false;
 
   int timeRemaining = 0;
 
   void start() {
     if (isRunning) return;
+
     setState(() {
       isRunning = true;
     });
@@ -93,11 +96,20 @@ class PomodoroTimerState extends State<PomodoroTimer> {
           timeRemaining -= 1;
         });
       } else {
-        await playAlarm();
-        pause();
-        next();
+        await _handlePeriodComplete();
       }
     });
+  }
+
+  Future<void> _handlePeriodComplete() async {
+    if (_isTransitioningState || !mounted) return;
+    _isTransitioningState = true;
+
+    await playAlarm();
+    pause();
+    next();
+
+    _isTransitioningState = false;
   }
 
   void pause() {
@@ -109,6 +121,8 @@ class PomodoroTimerState extends State<PomodoroTimer> {
   }
 
   Future<void> playAlarm() async {
+    await _audioPlayer?.dispose();
+
     final player = AudioPlayer();
     await player.setReleaseMode(ReleaseMode.loop);
     await player.setSource(AssetSource("alarm.mp3"));
@@ -126,6 +140,13 @@ class PomodoroTimerState extends State<PomodoroTimer> {
     });
 
     start();
+  }
+
+  @override
+  void dispose() {
+    _timerHandle?.cancel();
+    _audioPlayer?.dispose();
+    super.dispose();
   }
 
   void reset() {
