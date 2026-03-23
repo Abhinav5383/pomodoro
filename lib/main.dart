@@ -29,7 +29,8 @@ class HomePage extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(color: base.scaffoldBackgroundColor),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 32,
 
         children: [
           Container(
@@ -51,8 +52,6 @@ class HomePage extends StatelessWidget {
               ),
             ),
           ),
-
-          const SizedBox(height: 20),
 
           TextButton(
             style: TextButton.styleFrom(
