@@ -84,7 +84,7 @@ class PomodoroTimerState extends State<PomodoroTimer> {
   int timeRemaining = 0;
 
   void start() {
-    if (isTimerActive) return;
+    _timerHandle?.cancel();
 
     setState(() {
       isTimerActive = true;
@@ -159,10 +159,17 @@ class PomodoroTimerState extends State<PomodoroTimer> {
   }
 
   void next() {
-    setState(() {
+    if (isTimerActive) {
+      pause();
       state = getNextState(state);
       timeRemaining = getStateDuration(state);
-    });
+      start();
+    } else {
+      setState(() {
+        state = getNextState(state);
+        timeRemaining = getStateDuration(state);
+      });
+    }
   }
 
   void toggleTimer() {
