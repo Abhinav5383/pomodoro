@@ -8,6 +8,8 @@ final ThemeData lightTheme = ThemeData(
     seedColor: primarySeedColor,
     brightness: Brightness.light,
   ),
+  fontFamily: "Space Grotesk",
+  fontFamilyFallback: ["Roboto", "Helvetica", "Arial", "sans-serif"],
 );
 
 final ThemeData darkTheme = ThemeData(
@@ -16,5 +18,7 @@ final ThemeData darkTheme = ThemeData(
     seedColor: primarySeedColor,
     brightness: Brightness.dark,
   ),
+  fontFamily: "Space Grotesk",
+  fontFamilyFallback: ["Roboto", "Helvetica", "Arial", "sans-serif"],
   scaffoldBackgroundColor: Color(0xFF1A1F26),
 );

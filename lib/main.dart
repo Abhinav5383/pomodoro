@@ -205,6 +205,15 @@ class PomodoroTimerState extends State<PomodoroTimer> {
         ),
 
         _audioPlayer == null ? controlButtons(base) : alarmControls(base),
+
+        Text(
+          state == PomodoroState.focusPeriod ? "Focus Time" : "Break Time",
+          style: base.textTheme.labelLarge?.copyWith(
+            color: base.colorScheme.primary,
+            fontSize: 22,
+            decoration: TextDecoration.none,
+          ),
+        ),
       ],
     );
   }
