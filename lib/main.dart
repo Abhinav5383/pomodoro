@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pomodoro/theme.dart';
 
@@ -12,16 +15,21 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home: AppRoot(),
       theme: lightTheme,
       darkTheme: darkTheme,
     );
   }
 }
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class AppRoot extends StatefulWidget {
+  const AppRoot({super.key});
 
+  @override
+  State<AppRoot> createState() => AppRootState();
+}
+
+class AppRootState extends State<AppRoot> {
   @override
   Widget build(BuildContext context) {
     final base = Theme.of(context);
@@ -35,58 +43,206 @@ class HomePage extends StatelessWidget {
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Center(
               child: Container(
-                padding: const EdgeInsets.all(48),
-
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 32,
-
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: base.cardColor,
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(8.0),
-                        ),
-                      ),
-
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-
-                        child: Text(
-                          "00:00",
-                          style: TextStyle(
-                            color: base.colorScheme.primary,
-                            decoration: TextDecoration.none,
-                            fontSize: 48,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        backgroundColor: base.buttonTheme.colorScheme!.primary,
-                        foregroundColor:
-                            base.buttonTheme.colorScheme!.onPrimary,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 16,
-                        ),
-                      ),
-
-                      onPressed: () {
-                        print("btn clicked");
-                      },
-                      child: const Text("Start"),
-                    ),
-                  ],
-                ),
+                padding: const EdgeInsets.all(16),
+                child: PomodoroTimer(),
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+enum PomodoroState { focusPeriod, breakPeriod }
+
+class PomodoroTimer extends StatefulWidget {
+  const PomodoroTimer({super.key});
+
+  @override
+  State<PomodoroTimer> createState() => PomodoroTimerState();
+}
+
+class PomodoroTimerState extends State<PomodoroTimer> {
+  PomodoroTimerState() {
+    timeRemaining = getStateDuration(state);
+  }
+
+  final focusDuration = Duration(minutes: 25);
+  final breakDuration = Duration(minutes: 5);
+
+  PomodoroState state = PomodoroState.focusPeriod;
+  bool isRunning = false;
+  Timer? _timerHandle;
+
+  int timeRemaining = 0;
+
+  void start() {
+    if (isRunning) return;
+    setState(() {
+      isRunning = true;
+    });
+
+    _timerHandle = Timer.periodic(Duration(seconds: 1), (Timer _) {
+      if (timeRemaining > 0) {
+        setState(() {
+          timeRemaining -= 1;
+        });
+      } else {
+        next();
+      }
+    });
+  }
+
+  void pause() {
+    setState(() {
+      _timerHandle?.cancel();
+      _timerHandle = null;
+      isRunning = false;
+    });
+  }
+
+  void reset() {
+    pause();
+
+    setState(() {
+      state = PomodoroState.focusPeriod;
+      timeRemaining = getStateDuration(state);
+    });
+  }
+
+  void next() {
+    setState(() {
+      state = getNextState(state);
+      timeRemaining = getStateDuration(state);
+    });
+  }
+
+  void toggleTimer() {
+    if (isRunning) {
+      pause();
+    } else {
+      start();
+    }
+  }
+
+  int getStateDuration(PomodoroState state) {
+    if (state == PomodoroState.breakPeriod) {
+      return breakDuration.inSeconds;
+    } else {
+      return focusDuration.inSeconds;
+    }
+  }
+
+  PomodoroState getNextState(PomodoroState state) {
+    if (state == PomodoroState.breakPeriod) {
+      return PomodoroState.focusPeriod;
+    } else {
+      return PomodoroState.breakPeriod;
+    }
+  }
+
+  String formatTime(int time) {
+    final minutes = (time / 60).floor();
+    final seconds = time % 60;
+
+    return "${minutes.toString().padLeft(2, "0")}:${seconds.toString().padLeft(2, "0")}";
+  }
+
+  @override
+  Widget build(BuildContext ctx) {
+    final base = Theme.of(context);
+    final btnIconSize = 24.0;
+    final btnPadding = 28.0;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      spacing: 32,
+
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: base.cardColor,
+            borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+          ),
+
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+
+            child: Text(
+              formatTime(timeRemaining),
+              style: TextStyle(
+                color: base.colorScheme.primary,
+                decoration: TextDecoration.none,
+                fontSize: 84,
+              ),
+            ),
+          ),
+        ),
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 12,
+
+          children: [
+            IconButton(
+              style: IconButton.styleFrom(
+                backgroundColor: isRunning
+                    ? base.colorScheme.primary
+                    : base.colorScheme.primaryContainer,
+                foregroundColor: isRunning
+                    ? base.colorScheme.onPrimary
+                    : base.colorScheme.onPrimaryContainer,
+                padding: EdgeInsetsGeometry.symmetric(
+                  vertical: btnPadding,
+                  horizontal: btnPadding + 12,
+                ),
+              ),
+              icon: Transform.translate(
+                offset: Offset(isRunning ? 0 : btnIconSize / 12, 0),
+                child: Icon(
+                  isRunning
+                      ? CupertinoIcons.pause_fill
+                      : CupertinoIcons.play_fill,
+                  size: btnIconSize,
+                ),
+              ),
+              onPressed: toggleTimer,
+            ),
+
+            IconButton(
+              style: IconButton.styleFrom(
+                backgroundColor: base.colorScheme.secondaryContainer,
+                foregroundColor: base.colorScheme.onSecondaryContainer,
+                padding: EdgeInsetsGeometry.all(btnPadding),
+              ),
+              icon: Icon(
+                CupertinoIcons.arrow_counterclockwise,
+                size: btnIconSize,
+                fontWeight: FontWeight.w900,
+              ),
+              onPressed: reset,
+            ),
+
+            IconButton(
+              style: IconButton.styleFrom(
+                backgroundColor: base.colorScheme.secondaryContainer,
+                foregroundColor: base.colorScheme.onSecondaryContainer,
+                padding: EdgeInsetsGeometry.symmetric(
+                  vertical: btnPadding,
+                  horizontal: btnPadding - 8,
+                ),
+              ),
+              icon: Icon(
+                CupertinoIcons.forward_end_fill,
+                size: btnIconSize,
+                fontWeight: FontWeight.w100,
+              ),
+              onPressed: next,
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
