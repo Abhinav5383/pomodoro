@@ -41,8 +41,11 @@ jobs:
 
           - name: Zip bundle
             run: |
+                cd build/linux/x64/release/bundle
                 ZIP_NAME=pomodoro-linux-${{ github.ref_name }}.zip
-                zip -r $ZIP_NAME build/linux/x64/release/bundle/*
+                zip -r $ZIP_NAME .
+                cd -
+                mv build/linux/x64/release/bundle/$ZIP_NAME .
                 echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
           - name: Create release
