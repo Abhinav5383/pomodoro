@@ -42,6 +42,7 @@ jobs:
           - name: Zip bundle
             run: |
                 cd build/linux/x64/release/bundle
+                strip --strip-unneeded lib/libflutter_linux_gtk.so
                 ZIP_NAME=pomodoro-linux-${{ github.ref_name }}.zip
                 zip -r $ZIP_NAME .
                 cd -
