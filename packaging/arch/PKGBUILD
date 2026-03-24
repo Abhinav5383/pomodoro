@@ -1,0 +1,44 @@
+pkgname=pomodoro
+pkgid=com.github.Abhinav5383.pomodoro
+pkgver=0.1.2
+pkgrel=1
+pkgdesc="Simple Pomodoro timer built with Flutter"
+arch=('x86_64')
+url="https://github.com/Abhinav5383/pomodoro"
+license=('custom:unlicensed')
+depends=(
+  'gtk3'
+  'gstreamer'
+  'gst-plugins-base-libs'
+)
+source=("${pkgname}-${pkgver}.zip::${url}/releases/download/${pkgver}/${pkgname}-linux-${pkgver}.zip"
+        "timer-icon.png::https://raw.githubusercontent.com/Abhinav5383/pomodoro/main/images/timer-icon.png")
+        
+sha256sums=('ba54a4c9d7ddbb9ed276063a23e6e8114e8c90bb8f684e370df53b3b411489e4'
+            'SKIP')
+
+noextract=("${pkgname}-${pkgver}.zip")
+
+package() {
+  install -dm755 "${pkgdir}/usr/lib/${pkgname}"
+  bsdtar -xf "${srcdir}/${pkgname}-${pkgver}.zip" -C "${pkgdir}/usr/lib/${pkgname}"
+
+  install -dm755 "${pkgdir}/usr/bin"
+  ln -s "/usr/lib/${pkgname}/${pkgname}" "${pkgdir}/usr/bin/${pkgname}"
+
+  install -Dm644 "${srcdir}/timer-icon.png" "${pkgdir}/usr/share/pixmaps/${pkgname}.png"
+
+  install -dm755 "${pkgdir}/usr/share/applications"
+  cat > "${pkgdir}/usr/share/applications/${pkgid}.desktop" << EOF
+[Desktop Entry]
+Name=Pomodoro
+Comment=Simple Pomodoro timer
+Exec=${pkgname}
+Icon=${pkgname}
+Terminal=false
+Type=Application
+Categories=Utility;
+StartupWMClass=${pkgid}
+EOF
+}
+

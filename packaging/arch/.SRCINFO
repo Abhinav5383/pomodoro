@@ -1,0 +1,15 @@
+pkgbase = pomodoro
+	pkgdesc = Simple Pomodoro timer built with Flutter
+	pkgver = 0.1.2
+	pkgrel = 1
+	url = https://github.com/Abhinav5383/pomodoro
+	arch = x86_64
+	license = custom:unlicensed
+	depends = gtk3
+	depends = gstreamer
+	depends = gst-plugins-base-libs
+	noextract = pomodoro-0.1.2.zip
+	source = pomodoro-0.1.2.zip::https://github.com/Abhinav5383/pomodoro/releases/download/0.1.2/pomodoro-linux-0.1.2.zip
+	sha256sums = ba54a4c9d7ddbb9ed276063a23e6e8114e8c90bb8f684e370df53b3b411489e4
+
+pkgname = pomodoro
